@@ -78,4 +78,57 @@ public class FileProcessing {
         System.out.println("coldest temperature was: " + coldTemp + " on date " + filename.substring(8, 18));
         
     }
+    
+    public CSVRecord lowestHumidityInFile(CSVParser parser){
+        CSVRecord lowestHumiditySoFar = null;
+        for (CSVRecord currentRow: parser){
+            if (lowestHumiditySoFar == null){
+                lowestHumiditySoFar = currentRow;
+            } else {
+                if (!currentRow.get("Humidity").equals("N/A")){
+                    int currentHumidity = Integer.parseInt(currentRow.get("Humidity"));
+                    int lowestHumidity = Integer.parseInt(lowestHumiditySoFar.get("Humidity"));
+                    if ((currentHumidity < lowestHumidity)){
+                        lowestHumiditySoFar = currentRow;
+                    }
+                }
+            }
+        }
+        return lowestHumiditySoFar;
+    }
+    
+    public void testLowestHumidityInFile(){
+        FileResource fr = new FileResource();
+        CSVParser parser = fr.getCSVParser();
+        CSVRecord csv = lowestHumidityInFile(parser);
+        
+        System.out.println(csv.get("Humidity") + " at " + csv.get("DateUTC"));
+    }
+    
+    public CSVRecord lowestHumidityInManyFiles(){
+        CSVRecord lowestHumiditySoFar = null;
+        DirectoryResource dr = new DirectoryResource();
+
+        for (File f : dr.selectedFiles()){
+            FileResource fr = new FileResource(f);
+            CSVRecord currentRow = lowestHumidityInFile(fr.getCSVParser());
+            if (lowestHumiditySoFar == null){
+                lowestHumiditySoFar = currentRow;
+            } else {
+                if (!currentRow.get("Humidity").equals("N/A")){
+                    int currentHumidity = Integer.parseInt(currentRow.get("Humidity"));
+                    int lowestHumidity = Integer.parseInt(lowestHumiditySoFar.get("Humidity"));
+                    if ((currentHumidity < lowestHumidity)){
+                        lowestHumiditySoFar = currentRow;
+                    }
+                }
+            }
+        }
+        return lowestHumiditySoFar;
+    }
+    
+    public void testLowestHumidityInManyFiles(){
+        CSVRecord lowestHumidity = lowestHumidityInManyFiles();
+        System.out.println("Lowest Humidity was " + lowestHumidity.get("Humidity") + " at " + lowestHumidity.get("DateUTC"));
+    }
 }
